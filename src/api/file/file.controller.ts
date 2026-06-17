@@ -9,7 +9,7 @@ import {
   MaxFileSizeValidator,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { Authorization } from 'src/common';
+import { Authorization, FileResponse } from 'src/common';
 import { FileService } from './file.service';
 
 @Controller('files')
@@ -30,7 +30,7 @@ export class FileController {
     )
     files: Express.Multer.File[],
     @Query('folder') folder?: string,
-  ) {
+  ): Promise<FileResponse[]> {
     return this.fileService.saveFiles(files, folder);
   }
 }
