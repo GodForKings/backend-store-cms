@@ -163,6 +163,8 @@ model OrderItem {
 }
 
 enum EnumOrderStatus {
-	PENDING
-	PAYED
+  PENDING
+  PAYED
+  CANCELED
+  REFUNDED
 }
