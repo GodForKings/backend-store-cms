@@ -2,10 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { hash } from 'argon2';
 import { AuthDto } from './dto/auth.dto';
 import { PrismaService } from 'src/infra/prisma/prisma.service';
+import { ProductService } from '../product/product.service';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly productService: ProductService,
+  ) {}
 
   async getById(id: string) {
     const user = await this.prismaService.user.findUnique({
@@ -43,6 +47,8 @@ export class UserService {
     if (!user) {
       throw new NotFoundException('Пользователь не найден');
     }
+
+    await this.productService.getById(productId);
 
     const isExist = user?.favorites.some((product) => product.id === productId);
 

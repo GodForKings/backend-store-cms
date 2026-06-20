@@ -13,6 +13,7 @@ import { RegisterRequest } from './dto/register.dto';
 import { isDev, JwtPayload, OAuthProfile } from 'src/common';
 import type { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { verify } from 'argon2';
 
 @Injectable()
 export class AuthService {
@@ -30,17 +31,22 @@ export class AuthService {
     const data = { id: userId };
 
     const accessToken = this.jwtService.sign(data, { expiresIn: '1h' });
-
     const refreshToken = this.jwtService.sign(data, { expiresIn: '7d' });
 
     return { accessToken, refreshToken };
   }
 
-  private async validateUser(dto: AuthDto) {
+  async validateUser(dto: AuthDto) {
     const user = await this.userService.getByEmail(dto.email);
 
     if (!user) {
       throw new NotFoundException('Пользователь не найден');
+    }
+
+    const isPasswordValid = await verify(String(user.password), dto.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Неверный пароль');
     }
 
     return user;
@@ -67,7 +73,6 @@ export class AuthService {
 
   addRefreshTokenToResponse(res: Response, refreshToken: string) {
     const expireIn = new Date();
-
     expireIn.setDate(expireIn.getDate() + this.EXPIRE_DAY_REFRESH_TOKEN);
 
     res.cookie(this.REFRESH_TOKEN_NAME, refreshToken, {
@@ -123,7 +128,6 @@ export class AuthService {
     }
 
     const user = await this.userService.create(dto);
-
     const tokens = this.issueTokens(user.id);
 
     return { user, ...tokens };
