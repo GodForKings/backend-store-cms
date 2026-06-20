@@ -52,7 +52,7 @@ export class OrderService {
     return payment;
   }
 
-  // Убрать logger после тестов
+  /* Убрать logger после тестов */
   async updateStatus(dto: PaymentStatusDto) {
     this.logger.log(`Webhook event: ${dto.event}`);
 
